@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tặng bạn một bó hoa tươi thắm 🌹</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Tông màu hồng phấn đồng bộ với nền ảnh bó hoa */
+      background-color: #f9dcd8;
+      background-image: radial-gradient(#ffffff 1px, transparent 1px), radial-gradient(#ffffff 1px, #f9dcd8 1px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      font-family: 'Quicksand', sans-serif;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Màn hình chờ: Bó hoa */
+    #bouquet-screen {
+      text-align: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .bouquet-img {
+      width: 280px;
+      max-width: 80vw;
+      border-radius: 24px;
+      animation: floatBouquet 2.5s infinite ease-in-out;
+      filter: drop-shadow(0 12px 20px rgba(214, 51, 132, 0.2));
+      transition: transform 0.3s ease;
+    }
+    .bouquet-img:hover {
+      transform: scale(1.05);
+    }
+    .hint {
+      margin-top: 18px;
+      color: #c92a42;
+      font-weight: 600;
+      font-size: 1.15rem;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 10px 22px;
+      border-radius: 30px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(201, 42, 66, 0.12);
+      animation: pulse 1.8s infinite;
+    }
+
+    /* Thiệp và thư sau khi bấm vào hoa */
+    #card {
+      display: none;
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 15px 35px rgba(201, 42, 66, 0.15);
+      text-align: center;
+      animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10;
+      border: 2px solid #ffd8d8;
+    }
+    .mini-bouquet {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid #ffccd5;
+      margin-top: -65px;
+      background: #f9dcd8;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      color: #c92a42;
+      font-size: 2.2rem;
+      margin: 12px 0;
+    }
+    .photo-frame {
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      margin: 15px 0;
+      border: 5px solid #fff;
+    }
+    .photo-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    p.message {
+      color: #444;
+      line-height: 1.7;
+      font-size: 1rem;
+      text-align: left;
+      white-space: pre-line;
+      background: #fff5f6;
+      padding: 15px;
+      border-radius: 12px;
+      border-left: 4px solid #ff758f;
+    }
+
+    /* Hiệu ứng cánh hoa rơi */
+    .petal {
+      position: fixed;
+      top: -10%;
+      font-size: 20px;
+      user-select: none;
+      pointer-events: none;
+      animation: fall linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes floatBouquet {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-14px) rotate(2deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.75) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Màn hình chờ: Bó hoa hồng -->
+  <div id="bouquet-screen" onclick="openCard()">
+    <img src="hoa.png" alt="Bó hoa tặng bạn" class="bouquet-img">
+    <br>
+    <div class="hint">🌹 Chạm vào bó hoa để nhận thư nhé!</div>
+  </div>
+
+  <!-- Phần thiệp chính sau khi mở -->
+  <div id="card">
+    <img src="hoa.png" alt="Bó hoa nhỏ" class="mini-bouquet">
+    <h1>Gửi Người Đặc Biệt!</h1>
+    
+    <!-- Khung ảnh kỷ niệm (Xóa khối div này nếu chỉ muốn hiện hoa và thư) -->
+    <div class="photo-frame">
+      <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600" alt="Kỷ niệm">
+    </div>
+
+    <p class="message" id="typed-text"></p>
+  </div>
+
+  <!-- Nhạc nền (tùy chọn) -->
+  <audio id="bg-music" loop>
+    <source src="LINK_FILE_NHAC_MP3_CUA_BAN.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // NỘI DUNG BỨC THƯ
+    const letterContent = `Tặng bạn một bó hoa tươi thắm nhất! 🌹\n\nCảm ơn bạn vì đã luôn dịu dàng, rạng rỡ và mang lại thật nhiều niềm vui. Chúc bạn luôn hạnh phúc, bình an và ngập tràn tiếng cười không chỉ hôm nay mà trong mọi ngày sắp tới!\n\nThân mến,\n[Tên của bạn] ❤️`;
+
+    // Tạo hiệu ứng cánh hoa rơi tự động
+    function createPetals() {
+      const petals = ['🌸', '🌹', '✨', '🩷'];
+      for (let i = 0; i < 15; i++) {
+        let petal = document.createElement('div');
+        petal.className = 'petal';
+        petal.innerText = petals[Math.floor(Math.random() * petals.length)];
+        petal.style.left = Math.random() * 100 + 'vw';
+        petal.style.animationDuration = (Math.random() * 4 + 4) + 's';
+        petal.style.animationDelay = (Math.random() * 5) + 's';
+        document.body.appendChild(petal);
+      }
+    }
+    createPetals();
+
+    function openCard() {
+      document.getElementById('bouquet-screen').style.display = 'none';
+      document.getElementById('card').style.display = 'block';
+
+      // Phát nhạc nếu có
+      const music = document.getElementById('bg-music');
+      if (music.querySelector('source').src.includes('.mp3')) music.play().catch(()=>{});
+
+      // Bắn pháo hoa tông đỏ - hồng hợp với bó hoa
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#e63946', '#ff758f', '#ffb3c1', '#ffd166']
+      });
+
+      // Gõ chữ tự động
+      let i = 0;
+      const speed = 35;
+      const target = document.getElementById('typed-text');
+      function typeWriter() {
+        if (i < letterContent.length) {
+          target.innerHTML += letterContent.charAt(i);
+          i++;
+          setTimeout(typeWriter, speed);
+        }
+      }
+      typeWriter();
+    }
+  </script>
+</body>
+</html>
